@@ -1,0 +1,34 @@
+------------------Finding Updated Records--------------------
+select distinct(id),first_name,last_name,department_id,
+max(salary) over(partition by id) as current_salary
+from ms_employee_salary
+order by id;
+
+---------------------Avg no. of rooms in an Airbnb property---------------
+select avg(bathrooms) as avg_no_bathrooms,avg(bedrooms) as avg_no_bedrooms,city,property_type from airbnb_search_details
+group by city,property_type;
+
+------------------------Compare each employee's salary with the average salary of the corresponding department-----------------------------
+select department,first_name,salary,
+avg(salary) over(partition by department) avg_salary_dept
+from employee;
+
+------------------------the total cost of each customer's orders------------------------
+select distinct(c.id),c.first_name,
+sum(o.total_order_cost) over(partition by c.id)
+from customers c
+inner join orders o
+on c.id = o.cust_id
+order by c.first_name;
+
+-------------------------to find which gender gives a higher average review score when writing reviews as guests.--------------------
+select X.gender, X.score
+from
+(select g.gender as gender,avg(r.review_score) as score,
+rank() over(order by avg(r.review_score) desc) rnk
+from airbnb_reviews r
+inner join airbnb_guests g
+on r.from_user = g.guest_id
+where r.from_type = 'guest'
+group by g.gender) X
+where X.rnk = 1;
